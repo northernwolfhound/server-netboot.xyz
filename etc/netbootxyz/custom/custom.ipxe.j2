@@ -34,7 +34,7 @@ goto ${target}
 :auto_install
 echo Checking for GitHub configuration at: ${autoinstall_url}user-data
 # 'url' tells the kernel where to pull the 2GB ISO later so iPXE doesn't crash
-set params autoinstall ds=nocloud-net;s=${autoinstall_url} url=${iso_url} toram ip=dhcp ---
+set params autoinstall "ds=nocloud-net;s=${autoinstall_url}" url=${iso_url} toram ip=dhcp ---
 goto fetch_boot_files
 
 :maintenance

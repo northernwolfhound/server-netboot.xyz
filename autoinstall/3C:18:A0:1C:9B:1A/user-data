@@ -22,7 +22,9 @@ autoinstall:
     network:
       version: 2
       ethernets:
-        enx00e04c05003d: # Replace with your USB adapter's exact name
+        usb_adapter:  # This is just an internal label, not the actual interface name
+          match:
+            macaddress: "00:e0:4c:05:00:3d"
           dhcp4: no
           addresses:
             - 192.168.1.30/24
@@ -31,7 +33,7 @@ autoinstall:
               via: 192.168.1.254
           nameservers:
             addresses:
-              - 192.168.1.254 # Points to your router (and eventually AdGuard)
+              - 192.168.1.254
 
 
   # 4. The "Bridge" to your eMMC Secrets
@@ -57,7 +59,7 @@ autoinstall:
           curtin in-target -- bash /tmp/setup-secrets.sh
           
           # 5. Exit the loop so it doesn't run again if found on another partition
-          exit 0
+          break
         fi
         
         # Unmount if the script wasn't found on this partition

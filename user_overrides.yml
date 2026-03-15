@@ -7,6 +7,10 @@ generate_checksums: true
 generate_local_vars: true
 make_num_jobs: 1
 
+github_user: "northernwolfhound"
+github_repo: "server-netboot.xyz"
+custom_network: true
+
 # set desired site name
 # site_name: mysitename.com
 
