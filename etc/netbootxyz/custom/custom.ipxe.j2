@@ -6,11 +6,15 @@
 # 1. Variables
 set github_user nwolfhound
 set config_repo server-netboot.xyz
-set ubuntu_ver 24.04
+set ubuntu_release noble
+set ubuntu_ver 24.04.4
 # Fixed: added missing $ and / in the URL
-set base_url http://releases.ubuntu.com{ubuntu_ver}/ubuntu-${ubuntu_ver}-live-server-amd64.iso
-# Fixed: added missing $ before {github_user}
-set autoinstall_url https://raw.githubusercontent.com{github_user}/${config_repo}/master/autoinstall/${mac:hexhyp}/
+set mirror_url https://www.mirrorservice.org/sites/releases.ubuntu.com/${ubuntu_release}/netboot/amd64/
+set iso_url https://releases.ubuntu.com/${ubuntu_release}/ubuntu-${ubuntu_ver}-live-server-amd64.iso
+set autoinstall_url https://raw.githubusercontent.com/${github_user}/${config_repo}/refs/master/autoinstall/${mac:hexhyp}/
+
+# Initialize networking via DHCP first
+dhcp || echo DHCP failed, retrying... && dhcp
 
 # 2. Identify the Hardware
 # This pulls the 'identity' file from the MAC folder on GitHub
@@ -30,27 +34,27 @@ goto ${target}
 :auto_install
 echo Checking for GitHub configuration at: ${autoinstall_url}user-data
 # 'url' tells the kernel where to pull the 2GB ISO later so iPXE doesn't crash
-set params autoinstall ds=nocloud-net;s=${autoinstall_url} url=${base_url} ip=dhcp ---
+set params autoinstall ds=nocloud-net;s=${autoinstall_url} url=${iso_url} toram ip=dhcp ---
 goto fetch_boot_files
 
 :maintenance
 echo Entering Maintenance Mode...
-set params ip=dhcp url=${base_url} ---
+set params ip=dhcp toram url=${iso_url} ---
 goto fetch_boot_files
 
 :fetch_boot_files
 echo
 echo ========================================================
-echo   LOADING UBUNTU BOOT ENVIRONMENT (Loading Bar Below)
+echo   LOADING UBUNTU BOOT ENVIRONMENT
 echo ========================================================
 echo
 # Fetching these two files provides the iPXE progress bar you want
-imgfetch https://casper-mirror.edge.kernel.org || goto download_failed
-imgfetch https://casper-mirror.edge.kernel.org || goto download_failed
+imgfetch ${mirror_url}linux || goto download_failed
+imgfetch ${mirror_url}initrd || goto download_failed
 
 # Boot the kernel we just fetched into memory
 kernel linux ${params}
-initrd initrd.gz
+initrd initrd
 boot
 
 :download_failed
