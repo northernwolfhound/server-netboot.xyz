@@ -1,0 +1,71 @@
+#cloud-config
+autoinstall:
+  version: 1
+  # 1. Basic Identity
+  identity:
+    hostname: stack-server
+    username: nwolfhound
+    password: "$6$Ayg1WeK1M2T0dmxz$PPC/0QWXIIqFdtmUQLaWasHzIgU2Xx3aJL2FIwQXt0WtkyxJ3W40thzpWlUIN6nJtfM3UrWpJkBWGN3pUMwX70
+" # Hashed password
+  
+  # 2. Target the M.2 SSD for the OS
+  storage:
+    layout:
+      name: direct
+      match:
+        bus: "sata"  # Ignores eMMC (MMC bus) and NVMe
+        ssd: true    # Ignores mechanical HDDs and cheap USB sticks
+        size: smallest # Assuming your OS M.2 is smaller than your storage SSDs
+
+  # 3. Network Configuration
+  network:
+    network:
+      version: 2
+      ethernets:
+        enx00e04c05003d: # Replace with your USB adapter's exact name
+          dhcp4: no
+          addresses:
+            - 192.168.1.30/24
+          routes:
+            - to: default
+              via: 192.168.1.254
+          nameservers:
+            addresses:
+              - 192.168.1.254 # Points to your router (and eventually AdGuard)
+
+
+  # 4. The "Bridge" to your eMMC Secrets
+  late-commands:
+    - mkdir -p /mnt/emmc
+    - |
+      # 1. Loop through all block devices and partitions matching 'mmcblk'
+      # lsblk -np lists absolute paths (e.g., /dev/mmcblk0p1)
+      for PART in $(lsblk -np -o NAME,TYPE | grep 'part' | grep 'mmcblk' | cut -d' ' -f1); do
+        echo "Searching $PART for setup-secrets.sh..."
+        
+        # 2. Attempt to mount the partition. If it fails, move to the next.
+        mount "$PART" /mnt/emmc || continue
+        
+        # 3. Check for the script in the ROOT of the partition
+        if [ -f /mnt/emmc/setup-secrets.sh ]; then
+          echo "Found script on $PART! Copying to target..."
+          cp /mnt/emmc/setup-secrets.sh /target/tmp/
+          
+          # 4. Execute the script inside the newly installed OS context
+          # Unmount first to ensure the script can manage the drive if needed
+          umount /mnt/emmc
+          curtin in-target -- bash /tmp/setup-secrets.sh
+          
+          # 5. Exit the loop so it doesn't run again if found on another partition
+          exit 0
+        fi
+        
+        # Unmount if the script wasn't found on this partition
+        umount /mnt/emmc
+      done
+
+
+  # 5. Enable SSH for remote access
+  ssh:
+    install-server: true
+    allow-pw: true

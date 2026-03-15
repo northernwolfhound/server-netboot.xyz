@@ -1,36 +1,66 @@
 #!ipxe
 ###
-### {{ site_name }} custom menu example
+### nwolfhound custom menu
 ###
 
-:custom
-clear custom_choice
-menu This is a Test Menu
-item --gap This is the first sub menu
-item option_one ${space} Loading a kernel and initrd
-item option_two ${space} Loading an ISO
-item --gap This is a second sub menu
-item option_three ${space} Loads another custom sub menu
-item option_four ${space} This is option four
-choose custom_choice || goto custom_exit
-echo ${cls}
-goto ${custom_choice}
-goto custom_exit
+# 1. Variables
+set github_user nwolfhound
+set config_repo server-netboot.xyz
+set ubuntu_ver 24.04
+# Fixed: added missing $ and / in the URL
+set base_url http://releases.ubuntu.com{ubuntu_ver}/ubuntu-${ubuntu_ver}-live-server-amd64.iso
+# Fixed: added missing $ before {github_user}
+set autoinstall_url https://raw.githubusercontent.com{github_user}/${config_repo}/master/autoinstall/${mac:hexhyp}/
 
-:option_one
-kernel http://path.to/vmlinuz
-initrd http://path.to/initrd
-imgargs vmlinuz put_kernel_img_args_here
-boot || goto custom_exit
+# 2. Identify the Hardware
+# This pulls the 'identity' file from the MAC folder on GitHub
+chain --timeout 2000 ${autoinstall_url}identity || echo Unrecognised Hardware: ${mac:hexhyp}
 
-:option_two
-kernel {{ memdisk_location }} raw iso
-initrd http://path.to/iso
-boot || goto custom_exit
+:start
+menu Ubuntu Deployment Control
+item --gap Hardware Detected: ${mac:hexhyp}
+item auto_install    [1] Start Fully Automated Install (M.2 + eMMC)
+item maintenance     [2] Manual Maintenance Mode (Shell)
+item --gap Utilities
+item reload          [R] Reload from GitHub
+item custom_exit     [X] Exit to Main Menu
+choose --default auto_install --timeout 10000 target || goto maintenance
+goto ${target}
 
-:option_three
-echo Chains into another menu...
-chain custom1.ipxe || goto custom
+:auto_install
+echo Checking for GitHub configuration at: ${autoinstall_url}user-data
+# 'url' tells the kernel where to pull the 2GB ISO later so iPXE doesn't crash
+set params autoinstall ds=nocloud-net;s=${autoinstall_url} url=${base_url} ip=dhcp ---
+goto fetch_boot_files
+
+:maintenance
+echo Entering Maintenance Mode...
+set params ip=dhcp url=${base_url} ---
+goto fetch_boot_files
+
+:fetch_boot_files
+echo
+echo ========================================================
+echo   LOADING UBUNTU BOOT ENVIRONMENT (Loading Bar Below)
+echo ========================================================
+echo
+# Fetching these two files provides the iPXE progress bar you want
+imgfetch https://casper-mirror.edge.kernel.org || goto download_failed
+imgfetch https://casper-mirror.edge.kernel.org || goto download_failed
+
+# Boot the kernel we just fetched into memory
+kernel linux ${params}
+initrd initrd.gz
+boot
+
+:download_failed
+echo
+echo [ERROR] Download failed. Check your internet connection or URLs.
+shell
+
+:reload
+chain custom.ipxe
 
 :custom_exit
+chain utils.ipxe
 exit
