@@ -4,7 +4,6 @@ Your "Pre-Flight" Checklist for each server:
         Find it on a sticker on the motherboard/chassis.
         Or, boot any Linux Live USB and run ip link show.
     Prep the recovery partition (eMMC or custom):
-        Format it as ext4.
         Drop your setup-secrets.sh (passwords/SSH keys) onto it.
     Configure BIOS:
         Set UEFI Mode (disable Legacy/CSM).
