@@ -23,7 +23,7 @@ autoinstall:
       ethernets:
         usb_adapter:  # This is just an internal label, not the actual interface name
           match:
-            macaddress: "00:e0:4c:05:00:3d"
+            macaddress: "3c:18:a0:1c:9b:1a"
           dhcp4: no
           addresses:
             - 192.168.1.30/24
