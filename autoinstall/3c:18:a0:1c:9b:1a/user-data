@@ -5,8 +5,7 @@ autoinstall:
   identity:
     hostname: stack-server
     username: nwolfhound
-    password: "$6$Ayg1WeK1M2T0dmxz$PPC/0QWXIIqFdtmUQLaWasHzIgU2Xx3aJL2FIwQXt0WtkyxJ3W40thzpWlUIN6nJtfM3UrWpJkBWGN3pUMwX70
-" # Hashed password
+    password: "$6$Ayg1WeK1M2T0dmxz$PPC/0QWXIIqFdtmUQLaWasHzIgU2Xx3aJL2FIwQXt0WtkyxJ3W40thzpWlUIN6nJtfM3UrWpJkBWGN3pUMwX70" # Hashed password
   
   # 2. Target the M.2 SSD for the OS
   storage:
