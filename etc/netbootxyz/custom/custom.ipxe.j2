@@ -4,14 +4,14 @@
 ###
 
 # 1. Variables
-set github_user nwolfhound
+set github_user northernwolfhound
 set config_repo server-netboot.xyz
 set ubuntu_release noble
 set ubuntu_ver 24.04.4
 # Fixed: added missing $ and / in the URL
 set mirror_url https://www.mirrorservice.org/sites/releases.ubuntu.com/${ubuntu_release}/netboot/amd64/
 set iso_url https://releases.ubuntu.com/${ubuntu_release}/ubuntu-${ubuntu_ver}-live-server-amd64.iso
-set autoinstall_url https://raw.githubusercontent.com/${github_user}/${config_repo}/refs/master/autoinstall/${mac:hexhyp}/
+set autoinstall_url https://raw.githubusercontent.com/${github_user}/${config_repo}/refs/stable/autoinstall/${mac:hexhyp}/
 
 # Initialize networking via DHCP first
 dhcp || echo DHCP failed, retrying... && dhcp
