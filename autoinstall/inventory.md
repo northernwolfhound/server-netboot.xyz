@@ -1,1 +1,1 @@
-3C:18:A0:1C:9B:1A = Stack-Server
+3c:18:a0:1c:9b:1a = Stack-Server
